@@ -13,16 +13,12 @@ export default function GenderAnalyzer() {
   const [isVisible, setIsVisible] = useState(true);
 
   const promptQuestions = [
-    "Describe yourself",
-    "Describe your mother",
-    "Describe your father",
-    "Describe your best friend",
-    "Describe your ideal job",
-    "Describe your perfect day",
-    "Describe your role model",
-    "Describe your greatest achievement"
-  ];
-
+    "How might your personal background influence an algorithm's assessment of you?",
+    "How might societal stereotypes impact an AI system's decision-making?",
+    "How might an algorithm's training data reflect systemic inequities?",
+    "How might an AI's design choices perpetuate biased outcomes?",
+    "How might your own unconscious biases be reflected in algorithmic outputs?"
+    ];
   useEffect(() => {
     const intervalId = setInterval(() => {
       setIsVisible(false);
