@@ -23,7 +23,7 @@ const Home = () => {
     { id: 2, name: "Data Commons", href: '/data-commons', shape: 'square', number: '002', description: "Explore shared datasets" },
     { id: 3, name: "Gatekeeping Simulator", href: '/gate-keeping-simulator', shape: 'circle', number: '003', description: "Explore who controls content streams" },
     { id: 4, name: "Misinformation Spread", href: '/misinformation-simulator', shape: 'hexagon', number: '004', description: "Explore how information spreads from the source" },
-    { id: 5, name: "Component E", href: '/e', shape: 'circle', number: '005', description: "View component details" },
+    { id: 5, name: "Data Coalitions", href: '/geometric-data-game', shape: 'circle', number: '005', description: "Explore the conept of data coalitions" },
     { id: 6, name: "Component F", href: '/f', shape: 'square', number: '006', description: "View component details" },
   ];
 
