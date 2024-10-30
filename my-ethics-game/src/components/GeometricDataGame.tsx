@@ -2,14 +2,37 @@
 
 import React, { useState } from 'react';
 
+// Define interfaces for type safety
+interface Stats {
+  privacy: number;
+  trust: number;
+  influence: number;
+  members: number;
+  understanding: number;
+}
+
+interface Choice {
+  text: string;
+  effect: Partial<Stats>;
+  next: number | 'good_end' | 'bad_end';
+}
+
+interface Scene {
+  id: number | 'good_end' | 'bad_end';
+  title: string;
+  description: string;
+  choices: Choice[];
+}
+
 // Moved scenes and related functions to separate constant declarations
-const INITIAL_STATS = {
+const INITIAL_STATS: Stats = {
   privacy: 50,
   trust: 50,
   influence: 50,
   members: 1000,
   understanding: 0
 };
+
 
 const scenes = [
   {
@@ -148,141 +171,140 @@ const scenes = [
     description: "Without collective action, individual privacy becomes impossible. Big Tech companies continue to concentrate power, using data to predict and influence behavior with little oversight or restraint.",
     choices: []
   }
-];
+] as const;
 
-const calculateEnding = (stats) => {
-  const total = stats.privacy + stats.trust + stats.influence + stats.understanding;
-  if (total > 300) return "You've become a leading voice in the data coalition movement!";
-  if (total > 200) return "You're making a positive impact on digital rights!";
-  if (total > 100) return "You're learning to navigate the digital world more consciously.";
-  return "There's still much to learn about digital rights and data governance.";
-};
-
-const HeaderShapes = () => (
-  <div className="flex justify-center gap-4 mb-12">
-    {[...Array(12)].map((_, i) => (
-      <div
-        key={i}
-        className={`w-4 h-4 ${
-          i % 3 === 0 ? 'rounded-full' : 
-          i % 3 === 1 ? 'rotate-45' : 'rounded-lg'
-        } bg-black`}
-      />
-    ))}
-  </div>
-);
-
-const getImpactColor = (value) => {
-  if (value >= 75) return "text-black";
-  if (value >= 50) return "text-black";
-  return "text-black";
-};
-
-const GeometricDataGame = () => {
-  const [currentScene, setCurrentScene] = useState(0);
-  const [stats, setStats] = useState(INITIAL_STATS);
-  const [showSummary, setShowSummary] = useState(false);
-
-  const handleChoice = (choice) => {
-    setStats(prev => {
-      const newStats = { ...prev };
-      Object.entries(choice.effect).forEach(([key, value]) => {
-        if (key === 'members') {
-          newStats[key] = Math.max(0, prev[key] + value);
-        } else {
-          newStats[key] = Math.max(0, Math.min(100, prev[key] + value));
-        }
+const calculateEnding = (stats: Stats): string => {
+    const total = stats.privacy + stats.trust + stats.influence + stats.understanding;
+    if (total > 300) return "You've become a leading voice in the data coalition movement!";
+    if (total > 200) return "You're making a positive impact on digital rights!";
+    if (total > 100) return "You're learning to navigate the digital world more consciously.";
+    return "There's still much to learn about digital rights and data governance.";
+  };
+  
+  const HeaderShapes = () => (
+    <div className="flex justify-center gap-4 mb-12">
+      {[...Array(12)].map((_, i) => (
+        <div
+          key={i}
+          className={`w-4 h-4 ${
+            i % 3 === 0 ? 'rounded-full' : 
+            i % 3 === 1 ? 'rotate-45' : 'rounded-lg'
+          } bg-black`}
+        />
+      ))}
+    </div>
+  );
+  
+  const getImpactColor = (value: number): string => {
+    if (value >= 75) return "text-black";
+    if (value >= 50) return "text-black";
+    return "text-black";
+  };
+  
+  const GeometricDataGame: React.FC = () => {
+    const [currentScene, setCurrentScene] = useState<number | 'good_end' | 'bad_end'>(0);
+    const [stats, setStats] = useState<Stats>(INITIAL_STATS);
+    const [showSummary, setShowSummary] = useState(false);
+  
+    const handleChoice = (choice: Choice) => {
+      setStats(prev => {
+        const newStats = { ...prev };
+        Object.entries(choice.effect).forEach(([key, value]) => {
+          if (key === 'members') {
+            newStats[key as keyof Stats] = Math.max(0, prev[key as keyof Stats] + (value as number));
+          } else {
+            newStats[key as keyof Stats] = Math.max(0, Math.min(100, prev[key as keyof Stats] + (value as number)));
+          }
+        });
+        return newStats;
       });
-      return newStats;
-    });
-
-    if (typeof choice.next === 'string' && (choice.next === 'good_end' || choice.next === 'bad_end')) {
-      setShowSummary(true);
-    } else {
-      setCurrentScene(choice.next);
+  
+      if (typeof choice.next === 'string' && (choice.next === 'good_end' || choice.next === 'bad_end')) {
+        setShowSummary(true);
+      } else {
+        setCurrentScene(choice.next);
+      }
+    };
+  
+    const handleReset = () => {
+      setCurrentScene(0);
+      setStats(INITIAL_STATS);
+      setShowSummary(false);
+    };
+  
+    if (showSummary) {
+      return (
+        <div className="w-full max-w-4xl mx-auto p-8 bg-white">
+          <div className="mb-12 border border-black p-8">
+            <h2 className="text-2xl font-bold mb-6">Your Data Coalition Journey Complete!</h2>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-4">
+                {Object.entries(stats).map(([key, value]) => (
+                  <div key={key} className="p-4 border border-black">
+                    <div className="flex justify-between items-center">
+                      <span className="capitalize">{key}:</span>
+                      <span className={`font-bold ${key !== 'members' ? getImpactColor(value) : ''}`}>
+                        {key === 'members' ? value.toLocaleString() : `${value}%`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+  
+              <div className="p-4 border border-black mt-6">
+                <h3 className="font-bold mb-2">Your Leadership Style</h3>
+                <p>{calculateEnding(stats)}</p>
+              </div>
+  
+              <button 
+                className="w-full p-4 border border-black hover:bg-black hover:text-white transition-colors"
+                onClick={handleReset}
+              >
+                Play Again
+              </button>
+            </div>
+          </div>
+        </div>
+      );
     }
-  };
-
-  const handleReset = () => {
-    setCurrentScene(0);
-    setStats(INITIAL_STATS);
-    setShowSummary(false);
-  };
-
-  if (showSummary) {
+  
+    const currentSceneData = scenes.find(scene => scene.id === currentScene);
+    if (!currentSceneData) {
+      return null;
+    }
+  
     return (
       <div className="w-full max-w-4xl mx-auto p-8 bg-white">
         <div className="mb-12 border border-black p-8">
-          <h2 className="text-2xl font-bold mb-6">Your Data Coalition Journey Complete!</h2>
+          <h2 className="text-2xl font-bold mb-6">{currentSceneData.title}</h2>
+          <p className="text-lg mb-8">{currentSceneData.description}</p>
           
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4">
-              {Object.entries(stats).map(([key, value]) => (
-                <div key={key} className="p-4 border border-black">
-                  <div className="flex justify-between items-center">
-                    <span className="capitalize">{key}:</span>
-                    <span className={`font-bold ${key !== 'members' ? getImpactColor(value) : ''}`}>
-                      {key === 'members' ? value.toLocaleString() : `${value}%`}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-4 border border-black mt-6">
-              <h3 className="font-bold mb-2">Your Leadership Style</h3>
-              <p>{calculateEnding(stats)}</p>
-            </div>
-
-            <button 
-              className="w-full p-4 border border-black hover:bg-black hover:text-white transition-colors"
-              onClick={handleReset}
-            >
-              Play Again
-            </button>
+          <div className="space-y-4">
+            {currentSceneData.choices.map((choice, index) => (
+              <button
+                key={index}
+                onClick={() => handleChoice(choice)}
+                className="w-full p-4 border border-black hover:bg-black hover:text-white transition-colors text-left"
+              >
+                {choice.text}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
-    );
-  }
-
-  const currentSceneData = scenes.find(scene => scene.id === currentScene);
-  if (!currentSceneData) {
-    return null;
-  }
-
-  return (
-    <div className="w-full max-w-4xl mx-auto p-8 bg-white">
-    
-      <div className="mb-12 border border-black p-8">
-        <h2 className="text-2xl font-bold mb-6">{currentSceneData.title}</h2>
-        <p className="text-lg mb-8">{currentSceneData.description}</p>
-        
-        <div className="space-y-4">
-          {currentSceneData.choices.map((choice, index) => (
-            <button
-              key={index}
-              onClick={() => handleChoice(choice)}
-              className="w-full p-4 border border-black hover:bg-black hover:text-white transition-colors text-left"
-            >
-              {choice.text}
-            </button>
+  
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Object.entries(stats).map(([key, value]) => (
+            <div key={key} className="p-4 border border-black">
+              <div className="text-sm capitalize">{key}</div>
+              <div className={`text-lg font-bold ${key !== 'members' ? getImpactColor(value) : ''}`}>
+                {key === 'members' ? value.toLocaleString() : `${value}%`}
+              </div>
+            </div>
           ))}
         </div>
       </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Object.entries(stats).map(([key, value]) => (
-          <div key={key} className="p-4 border border-black">
-            <div className="text-sm capitalize">{key}</div>
-            <div className={`text-lg font-bold ${key !== 'members' ? getImpactColor(value) : ''}`}>
-              {key === 'members' ? value.toLocaleString() : `${value}%`}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-export default GeometricDataGame;
+    );
+  };
+  
+  export default GeometricDataGame;
