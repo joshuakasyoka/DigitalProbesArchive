@@ -19,7 +19,6 @@ const DigitalCommonsGame = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const promptQuestions = [
-    "How does AI&apos;s behavior affect society?",
     "What are the risks of rapid data extraction?",
     "When should protective measures be enabled?",
     "How does economic concentration impact innovation?",
