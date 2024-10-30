@@ -11,7 +11,7 @@ const DataLabelingGame = () => {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [gameActive, setGameActive] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
-  const [selectedLabels, setSelectedLabels] = useState([]);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -35,17 +35,21 @@ const DataLabelingGame = () => {
     "Person", "Animal", "Object", "Vehicle", "Indoor", "Outdoor", "Food/Drink"
   ];
 
-useEffect(() => {
-  let interval;
-  if (gameActive) {
-    interval = setInterval(() => {
-      setTimeElapsed(prev => prev + 1);
-    }, 1000);
-  }
-  return () => clearInterval(interval);
-}, [gameActive]); // Added gameActive to the dependency array
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (gameActive) {
+      interval = setInterval(() => {
+        setTimeElapsed(prev => prev + 1);
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [gameActive]);
 
-  const toggleLabel = (label) => {
+  const toggleLabel = (label: string) => {
     setSelectedLabels(prev => {
       if (prev.includes(label)) {
         return prev.filter(l => l !== label);
@@ -91,7 +95,7 @@ useEffect(() => {
     setError('');
   };
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
